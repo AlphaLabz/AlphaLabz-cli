@@ -100,12 +100,6 @@ func (g *InstallCmd) Run() error {
 		return fmt.Errorf("failed to install AlphaLab: %v", err)
 	}
 
-	// Verify the installation process
-	fmt.Println("Verifying AlphaLab installation...")
-	if err := verifyAlphalabStatus(); err != nil {
-		return fmt.Errorf("failed to verify AlphaLab installation: %v", err)
-	}
-
 	fmt.Println("AlphaLab installation completed successfully")
 	return nil
 }
@@ -135,7 +129,7 @@ func checkRequirements() error {
 
 // installAlphalab performs the cloning and setup of the repository using Docker Compose
 func installAlphalab(ADMIN_EMAIL string, ADMIN_PASSWORD string) error {
-	const folderName = "AlphaLab"
+	const folderName = setting.InstallFolder
 
 	// Check if the AlphaLab directory already exists
 	if _, err := os.Stat(folderName); !os.IsNotExist(err) {
@@ -198,12 +192,6 @@ func installAlphalab(ADMIN_EMAIL string, ADMIN_PASSWORD string) error {
 	}
 
 	fmt.Println("AlphaLab installation completed successfully!")
-	return nil
-}
-
-// verifyAlphalabStatus is a placeholder for verification logic
-func verifyAlphalabStatus() error {
-	// Placeholder for actual service verification logic
 	return nil
 }
 
