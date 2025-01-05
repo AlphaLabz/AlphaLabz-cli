@@ -33,11 +33,12 @@ jobs:
           mkdir -p dist
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
 
+      # Upload each platform's build with a unique artifact name
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: alphalab-binaries
-          path: dist/
+          name: alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
 
   release:
     name: Create GitHub Release
@@ -47,23 +48,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Download the build artifacts from the previous job
+      # Download all artifacts from the build job
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: alphalab-binaries
           path: dist/
 
-      # Confirm the files are present
-      - name: List Downloaded Files (for debugging)
+      # Confirm all files are downloaded
+      - name: List Downloaded Files
         run: ls -la dist/
 
-      # Create the GitHub Release with the downloaded artifacts
+      # Create the release with all downloaded artifacts
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
-          files: dist/*
+          files: dist/**/* # Use a wildcard to ensure all artifacts are included
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
