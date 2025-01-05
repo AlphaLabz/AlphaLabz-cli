@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-and-release:
     name: Build and Release Go Binary for Multiple Platforms
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         goos: [linux, windows, darwin]
@@ -31,18 +31,53 @@ jobs:
       - name: Build Go Binary with Static Linking
         run: |
           mkdir -p dist
-          # Force static build and ensure proper permissions on Unix
           CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -a -ldflags '-extldflags "-static"' -o dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
-          
-          # Ensure Unix executables are marked executable
-          if [[ "${{ matrix.goos }}" != "windows" ]]; then
-            chmod +x dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
-          fi
 
-      - name: List Built Files for Debugging
+      # Ensure executables are properly handled for Unix systems
+      - name: Set Executable Permissions (Non-Windows Only)
+        if: matrix.goos != 'windows'
+        run: chmod +x dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+
+      # Ensure Windows uses the .exe extension
+      - name: Rename Windows Binary
+        if: matrix.goos == 'windows'
+        run: mv dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }} dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}.exe
+
+      # List files to verify correct permissions and files
+      - name: List Files for Debugging
         run: ls -la dist/
 
-      # Release the binaries as GitHub release assets
+      # Ensure separate artifact upload per build to avoid conflicts
+      - name: Upload Build Artifacts (per platform)
+        uses: actions/upload-artifact@v4
+        with:
+          name: alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-and-release
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Download all artifacts from the build jobs individually to avoid tar issues
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+
+      # Ensure permissions are set again post-download
+      - name: Set Executable Permissions (Non-Windows Only)
+        run: |
+          find dist/ -type f ! -name "*.exe" -exec chmod +x {} \;
+
+      # Confirm all files are ready
+      - name: List Final Files
+        run: ls -la dist/
+
+      # Create the release with all downloaded binaries
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
