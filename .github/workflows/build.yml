@@ -1,42 +1,42 @@
 name: Go Multi-Platform Build
 
-on:
-  push:
-    branches:
-      # - main
+# on:
+#   push:
+#     branches:
+#        - main
 
-permissions:
-  contents: write
+# permissions:
+#   contents: write
 
-jobs:
-  build:
-    name: Build Go Binary for Multiple Platforms
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     name: Build Go Binary for Multiple Platforms
+#     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        goos: [linux, windows, darwin]  # Target platforms
-        goarch: [amd64, arm64]          # Architectures
-    steps:
-      # Checkout the code
-      - name: Checkout Code
-        uses: actions/checkout@v4
+#     strategy:
+#       matrix:
+#         goos: [linux, windows, darwin]  # Target platforms
+#         goarch: [amd64, arm64]          # Architectures
+#     steps:
+#       # Checkout the code
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
 
-      # Set up Go environment
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
+#       # Set up Go environment
+#       - name: Set up Go
+#         uses: actions/setup-go@v5
+#         with:
+#           go-version: '1.21'
 
-      # Build the binary for each platform
-      - name: Build Go Binary
-        run: |
-          mkdir -p dist
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+#       # Build the binary for each platform
+#       - name: Build Go Binary
+#         run: |
+#           mkdir -p dist
+#           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
 
-      # Upload the built binaries as separate artifacts for each platform
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+#       # Upload the built binaries as separate artifacts for each platform
+#       - name: Upload Build Artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+#           path: dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
