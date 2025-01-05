@@ -33,6 +33,10 @@ jobs:
           mkdir -p dist
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
 
+      # Make the built binary executable (for Unix systems)
+      - name: Make Binary Executable
+        run: chmod +x dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+
       # Upload each platform's build with a unique artifact name
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -54,16 +58,18 @@ jobs:
         with:
           path: dist/
 
-      # Confirm all files are downloaded
-      - name: List Downloaded Files
-        run: ls -la dist/
+      # Confirm all files are downloaded and permissions set correctly
+      - name: List Downloaded Files and Fix Permissions
+        run: |
+          chmod +x dist/*
+          ls -la dist/
 
-      # Create the release with all downloaded artifacts
+      # Create the release with all downloaded artifacts (including fixed permissions)
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
-          files: dist/**/* # Use a wildcard to ensure all artifacts are included
+          files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
