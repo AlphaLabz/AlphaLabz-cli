@@ -36,8 +36,8 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: alphalab-binaries
+          path: dist/
 
   release:
     name: Create GitHub Release
@@ -47,6 +47,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # Download the build artifacts from the previous job
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: alphalab-binaries
+          path: dist/
+
+      # Confirm the files are present
+      - name: List Downloaded Files (for debugging)
+        run: ls -la dist/
+
+      # Create the GitHub Release with the downloaded artifacts
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
