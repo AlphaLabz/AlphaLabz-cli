@@ -1,4 +1,4 @@
-name: Go Multi-Platform Build and Release (Manual Trigger)
+name: Go Multi-Platform Build and Release
 
 on:
   workflow_dispatch:
@@ -12,8 +12,8 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build Go Binary for Multiple Platforms
+  build-and-release:
+    name: Build and Release Go Binary for Multiple Platforms
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,38 +33,15 @@ jobs:
           mkdir -p dist
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
 
-      # Make the built binary executable (for Unix systems)
-      - name: Make Binary Executable
+      # Ensure the binary is executable (Unix systems)
+      - name: Set Executable Permissions
         run: chmod +x dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
 
-      # Upload each platform's build with a unique artifact name
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+      # List the files to confirm permissions
+      - name: List Files for Debugging
+        run: ls -la dist/
 
-  release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # Download all artifacts from the build job
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist/
-
-      # Confirm all files are downloaded and permissions set correctly
-      - name: List Downloaded Files and Fix Permissions
-        run: |
-          chmod +x dist/*
-          ls -la dist/
-
-      # Create the release with all downloaded artifacts (including fixed permissions)
+      # Create the GitHub Release and Upload Built Binaries as Assets
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
