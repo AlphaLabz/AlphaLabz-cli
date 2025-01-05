@@ -1,0 +1,53 @@
+name: Go Multi-Platform Build
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Go Binary for Multiple Platforms
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]  # Target platforms: Linux, Windows, macOS
+        goarch: [amd64, arm64]           # Architectures: 64-bit and ARM
+
+    steps:
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'  # Use your preferred Go version
+
+      # Build the binary for each platform
+      - name: Build Go Binary
+        run: |
+          mkdir -p dist
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o dist/alphalab-${{ matrix.goos }}-${{ matrix.goarch }}
+
+      # Upload the built binaries as artifacts for download
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: alphalab-binaries
+          path: dist/*
+
+      # Optional: Commit built binaries back to the repository (if desired)
+      - name: Commit Binaries (Optional)
+        if: success()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add dist/*
+          git commit -m "Add compiled binaries [skip ci]" || echo "No changes to commit"
+          git push
