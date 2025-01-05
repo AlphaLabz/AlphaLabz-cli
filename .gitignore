@@ -1,4 +1,7 @@
-.DS_Store
-
 /builds
-/AlphaLab
+/AlphaLabz
+.DS_Store
+main
+
+
+build.sh

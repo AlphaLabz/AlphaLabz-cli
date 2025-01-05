@@ -1,7 +1,7 @@
 package setting
 
-const RepoUrl string = "https://github.com/JRay-Lin/AlphaLab.git"
-const InstallFolder string = "AlphaLab"
+const RepoUrl string = "https://github.com/AlphaLabz/AlphaLabz.git"
+const InstallFolder string = "AlphaLabz"
 
 type SettingCmd struct {
 }
